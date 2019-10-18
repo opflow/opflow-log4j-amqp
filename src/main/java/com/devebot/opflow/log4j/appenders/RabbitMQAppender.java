@@ -1,5 +1,7 @@
 package com.devebot.opflow.log4j.appenders;
 
+import com.devebot.opflow.log4j.layouts.AbstractJsonLayout;
+import com.devebot.opflow.log4j.utils.JsonTool;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -10,6 +12,7 @@ import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LoggingEvent;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -35,6 +38,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
     private boolean queueExclusive = false;
     private boolean queueAutoDelete = false;
     private String routingKey = "";
+    private Map<String, Object> metadata;
 
     private ExecutorService threadPool = null;
 
@@ -73,6 +77,11 @@ public class RabbitMQAppender extends AppenderSkeleton {
             this.assertQueue();
         } catch (IOException | TimeoutException ioe) {
             errorHandler.error(ioe.getMessage(), ioe, ErrorCode.GENERIC_FAILURE);
+        }
+        
+        if (layout instanceof AbstractJsonLayout) {
+            AbstractJsonLayout jsonLayout = (AbstractJsonLayout) layout;
+            jsonLayout.setMetadata(metadata);
         }
     }
 
@@ -263,6 +272,14 @@ public class RabbitMQAppender extends AppenderSkeleton {
 
     public void setRoutingKey(String routingKey) {
         this.routingKey = routingKey;
+    }
+    
+    public String getMetadata() {
+        return JsonTool.toString(metadata);
+    }
+
+    public void setMetadata(String metadataString) {
+        this.metadata = JsonTool.toJsonMap(metadataString);
     }
 
     /**

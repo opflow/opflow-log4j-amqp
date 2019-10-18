@@ -3,6 +3,7 @@ package com.devebot.opflow.log4j.utils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonSyntaxException;
 import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -43,6 +44,15 @@ public class JsonTool {
         return pretty ? PSON.toJson(jsonMap) : GSON.toJson(jsonMap);
     }
     
+    public static Map<String, Object> toJsonMap(String json) {
+        try {
+            Map<String,Object> map = GSON.fromJson(json, Map.class);
+            return map;
+        } catch (JsonSyntaxException e) {
+            throw e;
+        }
+    }
+    
     public static Builder newBuilder() {
         return JsonTool.newBuilder(null, null);
     }
@@ -72,7 +82,7 @@ public class JsonTool {
     
     public static class Builder {
         private final Map<String, Object> fields;
-
+        
         public Builder() {
             this(null);
         }
@@ -83,6 +93,13 @@ public class JsonTool {
         
         public Builder put(String key, Object value) {
             fields.put(key, value);
+            return this;
+        }
+        
+        public Builder putAll(Map<String, Object> source) {
+            if (source != null) {
+                fields.putAll(source);
+            }
             return this;
         }
 

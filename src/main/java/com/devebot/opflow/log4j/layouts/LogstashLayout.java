@@ -9,19 +9,20 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SimpleJsonLayout extends AbstractJsonLayout {
+public class LogstashLayout extends AbstractJsonLayout {
 
-    public SimpleJsonLayout() {
+    public LogstashLayout() {
         super();
     }
 
     @Override
     protected void renderBasicFields(JsonTool.Builder builder, LoggingEvent event) {
-        builder.put("timestamp", event.getTimeStamp());
+        builder.put("@timestamp", event.getTimeStamp());
         builder.put("level", event.getLevel().toString());
         builder.put("message", event.getMessage());
         builder.put("loggerName", event.getLoggerName());
         builder.put("threadName", event.getThreadName());
+        builder.put("@version", 1);
     }
 
     @Override
