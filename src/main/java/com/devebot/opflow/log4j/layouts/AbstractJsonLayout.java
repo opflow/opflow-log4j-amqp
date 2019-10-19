@@ -47,14 +47,12 @@ public abstract class AbstractJsonLayout extends Layout {
      */
     @Override
     public String format(LoggingEvent loggingEvent) {
-        JsonTool.Builder builder;
-        if (metadata == null) {
-            builder = JsonTool.newBuilder();
-        } else {
-            builder = JsonTool.newBuilder(metadata);
-        }
+        JsonTool.Builder builder = JsonTool.newBuilder();
         renderBasicFields(builder, loggingEvent);
         renderThrowableFields(builder, loggingEvent);
+        if (metadata != null) {
+            builder.putAll(metadata);
+        }
         return builder.toString();
     }
 

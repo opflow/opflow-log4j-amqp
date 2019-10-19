@@ -2,6 +2,7 @@ package com.devebot.opflow.log4j.appenders;
 
 import com.devebot.opflow.log4j.layouts.AbstractJsonLayout;
 import com.devebot.opflow.log4j.utils.JsonTool;
+import com.google.gson.JsonSyntaxException;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
@@ -37,6 +38,9 @@ public class RabbitMQAppender extends AppenderSkeleton {
     private boolean queueDurable = false;
     private boolean queueExclusive = false;
     private boolean queueAutoDelete = false;
+    private long queueMaxLength = 0;
+    private long queueMaxLengthBytes = 0;
+    private long queueMessageTtl = 0;
     private String routingKey = "";
     private Map<String, Object> metadata;
 
@@ -81,7 +85,11 @@ public class RabbitMQAppender extends AppenderSkeleton {
         
         if (layout instanceof AbstractJsonLayout) {
             AbstractJsonLayout jsonLayout = (AbstractJsonLayout) layout;
-            jsonLayout.setMetadata(metadata);
+            try {
+                jsonLayout.setMetadata(metadata);
+            } catch (JsonSyntaxException jse) {
+                errorHandler.error(jse.getMessage(), jse, ErrorCode.GENERIC_FAILURE);
+            }
         }
     }
 
@@ -266,6 +274,38 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.queueAutoDelete = queueAutoDelete;
     }
 
+    public long getQueueMaxLength() {
+        return queueMaxLength;
+    }
+
+    public void setQueueMaxLength(long queueMaxLength) {
+        this.queueMaxLength = queueMaxLength;
+    }
+
+    public long getQueueMaxLengthBytes() {
+        return queueMaxLengthBytes;
+    }
+
+    public void setQueueMaxLengthBytes(long queueMaxLengthBytes) {
+        this.queueMaxLengthBytes = queueMaxLengthBytes;
+    }
+
+    public long getQueueMessageTtl() {
+        return queueMessageTtl;
+    }
+
+    public void setQueueMessageTtl(long queueMessageTtl) {
+        this.queueMessageTtl = queueMessageTtl;
+    }
+
+    public long getQueueMessageTTL() {
+        return queueMessageTtl;
+    }
+
+    public void setQueueMessageTTL(long queueMessageTTL) {
+        this.queueMessageTtl = queueMessageTTL;
+    }
+
     public String getRoutingKey() {
         return routingKey;
     }
@@ -300,9 +340,19 @@ public class RabbitMQAppender extends AppenderSkeleton {
      * @throws TimeoutException
      */
     private void assertQueue() throws IOException, TimeoutException {
+        Map<String, Object> args = JsonTool.newBuilder().toMap();
+        if (queueMaxLength > 0) {
+            args.put("x-max-length", queueMaxLength);
+        }
+        if (queueMaxLengthBytes > 0) {
+            args.put("x-max-length-bytes", queueMaxLengthBytes);
+        }
+        if (queueMessageTtl > 0) {
+            args.put("x-message-ttl", queueMessageTtl);
+        }
         final Channel _channel = getChannel();
         synchronized (_channel) {
-            _channel.queueDeclare(queueName, queueDurable, queueExclusive, queueAutoDelete, null);
+            _channel.queueDeclare(queueName, queueDurable, queueExclusive, queueAutoDelete, args);
             _channel.queueBind(queueName, exchangeName, routingKey);
         }
     }
