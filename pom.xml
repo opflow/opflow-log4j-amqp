@@ -7,8 +7,24 @@
     <version>1.0.0</version>
     <packaging>jar</packaging>
     <name>opflow-log4j-amqp</name>
+    <description>log4j appender to AMQP (RabbitMQ)</description>
     <url>https://github.com/opflow/opflow-log4j-amqp</url>
 
+    <licenses>
+        <license>
+            <name>MIT</name>
+        </license>
+    </licenses>
+    
+    <developers>
+        <developer>
+            <name>Devebot Team</name>
+            <email>contact@devebot.com</email>
+            <organization>Devebot</organization>
+            <organizationUrl>https://www.devebot.com</organizationUrl>
+        </developer>
+    </developers>
+    
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <artifact.name>${project.artifactId}</artifact.name>
