@@ -31,6 +31,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
     private String username = "guest";
     private String password = "guest";
     private String virtualHost = "/";
+
     private String exchangeName = "log-exchange";
     private String exchangeType = "direct";
     private boolean exchangeDurable = false;
@@ -44,10 +45,25 @@ public class RabbitMQAppender extends AppenderSkeleton {
     private String routingKey = "";
     private Map<String, Object> metadata;
 
+    private Boolean automaticRecoveryEnabled = true;
+    private Boolean topologyRecoveryEnabled = true;
+    private int networkRecoveryInterval = 0;
+    private int connectionTimeout = 0;
+    private int handshakeTimeout = 0;
+    private int shutdownTimeout = 0;
+    private int heartbeatTimeout = 0;
+    private int frameSizeLimit = 0;
+
     private ExecutorService threadPool = null;
+    private static RabbitMQAppender instance;
 
     public RabbitMQAppender() {
         super();
+        instance = this;
+    }
+
+    public static RabbitMQAppender getActiveInstance() {
+        return instance;
     }
 
     /**
@@ -322,6 +338,86 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.metadata = JsonTool.toJsonMap(metadataString);
     }
 
+    public Boolean getAutomaticRecoveryEnabled() {
+        return automaticRecoveryEnabled;
+    }
+
+    public void setAutomaticRecoveryEnabled(Boolean automaticRecoveryEnabled) {
+        this.automaticRecoveryEnabled = automaticRecoveryEnabled;
+    }
+
+    public Boolean getTopologyRecoveryEnabled() {
+        return topologyRecoveryEnabled;
+    }
+
+    public void setTopologyRecoveryEnabled(Boolean topologyRecoveryEnabled) {
+        this.topologyRecoveryEnabled = topologyRecoveryEnabled;
+    }
+
+    public int getNetworkRecoveryInterval() {
+        return networkRecoveryInterval;
+    }
+
+    public void setNetworkRecoveryInterval(int networkRecoveryInterval) {
+        this.networkRecoveryInterval = networkRecoveryInterval;
+    }
+
+    public int getConnectionTimeout() {
+        return connectionTimeout;
+    }
+
+    public void setConnectionTimeout(int connectionTimeout) {
+        this.connectionTimeout = connectionTimeout;
+    }
+
+    public int getHandshakeTimeout() {
+        return handshakeTimeout;
+    }
+
+    public void setHandshakeTimeout(int handshakeTimeout) {
+        this.handshakeTimeout = handshakeTimeout;
+    }
+
+    public int getShutdownTimeout() {
+        return shutdownTimeout;
+    }
+
+    public void setShutdownTimeout(int shutdownTimeout) {
+        this.shutdownTimeout = shutdownTimeout;
+    }
+
+    public int getHeartbeatTimeout() {
+        return heartbeatTimeout;
+    }
+
+    public void setHeartbeatTimeout(int heartbeatTimeout) {
+        this.heartbeatTimeout = heartbeatTimeout;
+    }
+
+    public int getRequestedHeartbeat() {
+        return heartbeatTimeout;
+    }
+
+    public void setRequestedHeartbeat(int requestedHeartbeat) {
+        this.heartbeatTimeout = requestedHeartbeat;
+    }
+
+    public int getFrameSizeLimit() {
+        return frameSizeLimit;
+    }
+
+    public void setFrameSizeLimit(int frameSizeLimit) {
+        this.frameSizeLimit = frameSizeLimit;
+    }
+
+    public int getRequestedFrameMax() {
+        return frameSizeLimit;
+    }
+
+    public void setRequestedFrameMax(int requestedFrameMax) {
+        this.frameSizeLimit = requestedFrameMax;
+    }
+
     /**
      * Declares the exchangeName to publish the log messages
      * @throws IOException
@@ -390,6 +486,29 @@ public class RabbitMQAppender extends AppenderSkeleton {
         factory.setVirtualHost(this.virtualHost);
         factory.setUsername(this.username);
         factory.setPassword(this.password);
+        
+        if (automaticRecoveryEnabled != null) {
+            factory.setAutomaticRecoveryEnabled(automaticRecoveryEnabled);
+        }
+        if (topologyRecoveryEnabled != null) {
+            factory.setTopologyRecoveryEnabled(topologyRecoveryEnabled);
+        }
+        if (networkRecoveryInterval > 0) {
+            factory.setNetworkRecoveryInterval(networkRecoveryInterval);
+        }
+        if (connectionTimeout > 0) {
+            factory.setConnectionTimeout(connectionTimeout);
+        }
+        if (handshakeTimeout > 0) {
+            factory.setHandshakeTimeout(handshakeTimeout);
+        }
+        if (heartbeatTimeout > 0) {
+            factory.setRequestedHeartbeat(heartbeatTimeout);
+        }
+        if (frameSizeLimit > 0) {
+            factory.setRequestedFrameMax(frameSizeLimit);
+        }
+        
         return factory;
     }
 
