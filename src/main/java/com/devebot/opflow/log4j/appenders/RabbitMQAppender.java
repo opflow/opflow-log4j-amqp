@@ -96,7 +96,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
     /**
      * Ensures that a Layout property is required
      * 
-     * @return
+     * @return boolean Layout is required if true
      */
     @Override
     public boolean requiresLayout() {
@@ -106,7 +106,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
     /**
      * Submits LoggingEvent for publishing if it reaches severity threshold.
      * 
-     * @param loggingEvent
+     * @param loggingEvent the logging event object
      */
     @Override
     protected void append(LoggingEvent loggingEvent) {
@@ -130,7 +130,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
          * Method is called by the ExecutorService and publishes the message to 
          *  the RabbitMQ Server
          * 
-         * @return
+         * @return LoggingEvent the current logging event object
          * @throws Exception
          */
         @Override
@@ -359,7 +359,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
 
     /**
      * Creates a single channel to RabbitMQ server
-     * @return
+     * @return Channel the activated channel object
      * @throws IOException
      */
     private Channel getChannel() throws IOException, TimeoutException {
@@ -371,7 +371,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
 
     /**
      * Creates a single connection to RabbitMQ server according to properties
-     * @return
+     * @return Connection the activated connection object
      * @throws IOException
      */
     private Connection getConnection() throws IOException, TimeoutException {

@@ -42,7 +42,7 @@ public abstract class AbstractJsonLayout extends Layout {
     /**
      * format a given LoggingEvent to a JSON string
      *
-     * @param loggingEvent
+     * @param loggingEvent the current logging event object
      * @return String representation of LoggingEvent
      */
     @Override
@@ -59,16 +59,16 @@ public abstract class AbstractJsonLayout extends Layout {
     /**
      * Converts basic LoggingEvent properties to JSON object
      *
-     * @param builder
-     * @param event
+     * @param builder the JSON builder object
+     * @param event the current logging event object
      */
     protected abstract void renderBasicFields(JsonTool.Builder builder, LoggingEvent event);
 
     /**
      * Converts LoggingEvent Throwable to JSON object
      *
-     * @param builder
-     * @param event
+     * @param builder the JSON builder object
+     * @param event the current logging event object
      */
     protected abstract void renderThrowableFields(JsonTool.Builder builder, LoggingEvent event);
     
@@ -82,7 +82,7 @@ public abstract class AbstractJsonLayout extends Layout {
     /**
      * Declares that this layout does not ignore Throwable if available
      *
-     * @return
+     * @return boolean yes or no
      */
     @Override
     public boolean ignoresThrowable() {
