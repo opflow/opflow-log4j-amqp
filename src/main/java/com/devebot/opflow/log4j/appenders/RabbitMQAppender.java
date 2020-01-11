@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class RabbitMQAppender extends AppenderSkeleton {
@@ -524,6 +525,19 @@ public class RabbitMQAppender extends AppenderSkeleton {
      */
     @Override
     public void close() {
+        if (threadPool != null) {
+            threadPool.shutdown();
+            try {
+                if (!threadPool.awaitTermination(60, TimeUnit.SECONDS)) {
+                    threadPool.shutdownNow();
+                    threadPool.awaitTermination(60, TimeUnit.SECONDS);
+                }
+            } catch (InterruptedException ie) {
+                threadPool.shutdownNow();
+            }
+            threadPool = null;
+        }
+
         if (channel != null && channel.isOpen()) {
             try {
                 channel.close();
