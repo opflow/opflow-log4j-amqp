@@ -24,9 +24,12 @@ import java.util.concurrent.TimeoutException;
 public class RabbitMQAppender extends AppenderSkeleton {
     
     private final ConnectionFactory factory = new ConnectionFactory();
-    private Connection connection = null;
-    private Channel channel = null;
+    private volatile Connection connection = null;
+    private volatile Channel channel = null;
+    private volatile ExecutorService threadPool = null;
 
+    private Boolean activated = true;
+    private Boolean enabled = true;
     private String identifier = null;
     private String host = "localhost";
     private int port = 5762;
@@ -36,11 +39,11 @@ public class RabbitMQAppender extends AppenderSkeleton {
 
     private String exchangeName = "log-exchange";
     private String exchangeType = "direct";
-    private boolean exchangeDurable = false;
+    private Boolean exchangeDurable = false;
     private String queueName = "log-queue";
-    private boolean queueDurable = false;
-    private boolean queueExclusive = false;
-    private boolean queueAutoDelete = false;
+    private Boolean queueDurable = false;
+    private Boolean queueExclusive = false;
+    private Boolean queueAutoDelete = false;
     private long queueMaxLength = 0;
     private long queueMaxLengthBytes = 0;
     private long queueMessageTtl = 0;
@@ -56,7 +59,6 @@ public class RabbitMQAppender extends AppenderSkeleton {
     private int heartbeatTimeout = 0;
     private int frameSizeLimit = 0;
 
-    private ExecutorService threadPool = null;
     private final OptionUpdater optionUpdater;
     private static RabbitMQAppender instance;
 
@@ -80,7 +82,9 @@ public class RabbitMQAppender extends AppenderSkeleton {
         super.activateOptions();
 
         optionUpdater.activateOptions();
-
+        
+        if (!this.activated) return;
+        
         try {
             this.getConnection();
         } catch (IOException | TimeoutException ioe) {
@@ -132,8 +136,10 @@ public class RabbitMQAppender extends AppenderSkeleton {
      */
     @Override
     protected void append(LoggingEvent loggingEvent) {
-        if ( isAsSevereAsThreshold(loggingEvent.getLevel())) {
-            getThreadPoolExecutor().submit(new LoggingTask(loggingEvent));
+        if (this.activated && this.enabled) {
+            if (isAsSevereAsThreshold(loggingEvent.getLevel())) {
+                getThreadPoolExecutor().submit(new LoggingTask(loggingEvent));
+            }
         }
     }
 
@@ -171,6 +177,22 @@ public class RabbitMQAppender extends AppenderSkeleton {
     /*
      * The getters & setters corresponding to appender configuration properties
      */
+
+    public Boolean getActivated() {
+        return activated;
+    }
+
+    public void setActivated(Boolean activated) {
+        this.activated = activated;
+    }
+
+    public Boolean getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
 
     public String getIdentifier() {
         return identifier;
@@ -248,11 +270,11 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.exchangeType = type;
     }
 
-    public boolean isExchangeDurable() {
+    public Boolean getExchangeDurable() {
         return exchangeDurable;
     }
 
-    public void setExchangeDurable(boolean durable) {
+    public void setExchangeDurable(Boolean durable) {
         this.exchangeDurable = durable;
     }
 
@@ -272,27 +294,27 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.queueName = queueName;
     }
 
-    public boolean isQueueDurable() {
+    public Boolean getQueueDurable() {
         return queueDurable;
     }
 
-    public void setQueueDurable(boolean queueDurable) {
+    public void setQueueDurable(Boolean queueDurable) {
         this.queueDurable = queueDurable;
     }
 
-    public boolean isQueueExclusive() {
+    public Boolean getQueueExclusive() {
         return queueExclusive;
     }
 
-    public void setQueueExclusive(boolean queueExclusive) {
+    public void setQueueExclusive(Boolean queueExclusive) {
         this.queueExclusive = queueExclusive;
     }
 
-    public boolean isQueueAutoDelete() {
+    public Boolean getQueueAutoDelete() {
         return queueAutoDelete;
     }
 
-    public void setQueueAutoDelete(boolean queueAutoDelete) {
+    public void setQueueAutoDelete(Boolean queueAutoDelete) {
         this.queueAutoDelete = queueAutoDelete;
     }
 
