@@ -39,7 +39,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
 
     private String exchangeName = "log-exchange";
     private String exchangeType = "direct";
-    private Boolean exchangeDurable = false;
+    private Boolean exchangeDurable = true;
     private String queueName = "log-queue";
     private Boolean queueDurable = false;
     private Boolean queueExclusive = false;
@@ -83,7 +83,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
 
         optionUpdater.activateOptions();
         
-        if (!this.activated) return;
+        if (!this.getEnabled()) return;
         
         try {
             this.getConnection();
@@ -136,7 +136,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
      */
     @Override
     protected void append(LoggingEvent loggingEvent) {
-        if (this.activated && this.enabled) {
+        if (this.getActivated() && this.getEnabled()) {
             if (isAsSevereAsThreshold(loggingEvent.getLevel())) {
                 getThreadPoolExecutor().submit(new LoggingTask(loggingEvent));
             }
@@ -178,6 +178,14 @@ public class RabbitMQAppender extends AppenderSkeleton {
      * The getters & setters corresponding to appender configuration properties
      */
 
+    public boolean isActivated() {
+        return activated;
+    }
+
+    public void setActivated(boolean activated) {
+        this.activated = activated;
+    }
+    
     public Boolean getActivated() {
         return activated;
     }
@@ -186,6 +194,14 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.activated = activated;
     }
 
+    public boolean isEnabled() {
+        return enabled;
+    }
+    
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+    
     public Boolean getEnabled() {
         return enabled;
     }
@@ -270,10 +286,18 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.exchangeType = type;
     }
 
+    public boolean isExchangeDurable() {
+        return exchangeDurable;
+    }
+    
+    public void setExchangeDurable(boolean durable) {
+        this.exchangeDurable = durable;
+    }
+    
     public Boolean getExchangeDurable() {
         return exchangeDurable;
     }
-
+    
     public void setExchangeDurable(Boolean durable) {
         this.exchangeDurable = durable;
     }
@@ -294,6 +318,14 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.queueName = queueName;
     }
 
+    public boolean isQueueDurable() {
+        return queueDurable;
+    }
+
+    public void setQueueDurable(boolean queueDurable) {
+        this.queueDurable = queueDurable;
+    }
+    
     public Boolean getQueueDurable() {
         return queueDurable;
     }
@@ -302,6 +334,14 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.queueDurable = queueDurable;
     }
 
+    public boolean isQueueExclusive() {
+        return queueExclusive;
+    }
+
+    public void setQueueExclusive(boolean queueExclusive) {
+        this.queueExclusive = queueExclusive;
+    }
+    
     public Boolean getQueueExclusive() {
         return queueExclusive;
     }
@@ -310,6 +350,14 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.queueExclusive = queueExclusive;
     }
 
+    public boolean isQueueAutoDelete() {
+        return queueAutoDelete;
+    }
+
+    public void setQueueAutoDelete(boolean queueAutoDelete) {
+        this.queueAutoDelete = queueAutoDelete;
+    }
+    
     public Boolean getQueueAutoDelete() {
         return queueAutoDelete;
     }
@@ -366,6 +414,14 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.metadata = JsonTool.toJsonMap(metadataString);
     }
 
+    public boolean isAutomaticRecoveryEnabled() {
+        return automaticRecoveryEnabled;
+    }
+
+    public void setAutomaticRecoveryEnabled(boolean automaticRecoveryEnabled) {
+        this.automaticRecoveryEnabled = automaticRecoveryEnabled;
+    }
+    
     public Boolean getAutomaticRecoveryEnabled() {
         return automaticRecoveryEnabled;
     }
@@ -374,6 +430,14 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.automaticRecoveryEnabled = automaticRecoveryEnabled;
     }
 
+    public boolean isTopologyRecoveryEnabled() {
+        return topologyRecoveryEnabled;
+    }
+
+    public void setTopologyRecoveryEnabled(boolean topologyRecoveryEnabled) {
+        this.topologyRecoveryEnabled = topologyRecoveryEnabled;
+    }
+    
     public Boolean getTopologyRecoveryEnabled() {
         return topologyRecoveryEnabled;
     }
