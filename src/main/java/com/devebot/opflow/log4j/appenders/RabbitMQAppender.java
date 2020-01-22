@@ -61,10 +61,12 @@ public class RabbitMQAppender extends AppenderSkeleton {
     private int frameSizeLimit = 0;
 
     private ExecutorService threadPool = null;
+    private final OptionUpdater optionUpdater;
     private static RabbitMQAppender instance;
 
     public RabbitMQAppender() {
         super();
+        optionUpdater = new OptionUpdater(this);
         instance = this;
     }
 
@@ -81,7 +83,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
     public void activateOptions() {
         super.activateOptions();
 
-        this.updateInlineOptions();
+        optionUpdater.activateOptions();
 
         try {
             this.getConnection();
@@ -170,59 +172,67 @@ public class RabbitMQAppender extends AppenderSkeleton {
         }
     }
 
-    private void updateInlineOptions() {
-        String prefix = "log4j.appender." + this.getName() + ".";
-        Properties inlineOpts = PropTool.filterProperties(System.getProperties(), prefix);
+    class OptionUpdater {
+        private final AppenderSkeleton target;
 
-        for (Map.Entry<Object, Object> entry : inlineOpts.entrySet()) {
-            try {
-                String fieldName = extractFieldName(prefix, entry.getKey().toString());
-                Method fieldGetter = extractFieldGetter(fieldName);
-                if (fieldGetter != null) {
-                    Class fieldType = fieldGetter.getReturnType();
-                    Method fieldSetter = extractFieldSetter(fieldName, fieldType);
-                    if (fieldSetter != null) {
-                        Object fieldArg = TypeConverter.convert(entry.getValue(), fieldType);
-                        if (fieldArg != null) {
-                            fieldSetter.invoke(this, fieldArg);
+        public OptionUpdater(AppenderSkeleton target) {
+            this.target = target;
+        }
+        
+        public void activateOptions() {
+            String prefix = "log4j.appender." + target.getName() + ".";
+            Properties inlineOpts = PropTool.filterProperties(System.getProperties(), prefix);
+
+            for (Map.Entry<Object, Object> entry : inlineOpts.entrySet()) {
+                try {
+                    String fieldName = extractFieldName(prefix, entry.getKey().toString());
+                    Method fieldGetter = extractFieldGetter(fieldName);
+                    if (fieldGetter != null) {
+                        Class fieldType = fieldGetter.getReturnType();
+                        Method fieldSetter = extractFieldSetter(fieldName, fieldType);
+                        if (fieldSetter != null) {
+                            Object fieldArg = TypeConverter.convert(entry.getValue(), fieldType);
+                            if (fieldArg != null) {
+                                fieldSetter.invoke(target, fieldArg);
+                            }
                         }
                     }
+                } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                    target.getErrorHandler().error(e.getMessage(), e, ErrorCode.GENERIC_FAILURE);
                 }
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                errorHandler.error(e.getMessage(), e, ErrorCode.GENERIC_FAILURE);
             }
         }
-    }
-    
-    private String extractFieldName(String prefix, String propKey) {
-        if (propKey != null) {
-            return capitalize(propKey.replace(prefix, ""));
+
+        private String extractFieldName(String prefix, String propKey) {
+            if (propKey != null) {
+                return capitalize(propKey.replace(prefix, ""));
+            }
+            return propKey;
         }
-        return propKey;
-    }
-    
-    private String capitalize(String str) {
-        if (str != null && str.length() > 0) {
-            return str.substring(0, 1).toUpperCase() + str.substring(1);
+
+        private String capitalize(String str) {
+            if (str != null && str.length() > 0) {
+                return str.substring(0, 1).toUpperCase() + str.substring(1);
+            }
+            return str;
         }
-        return str;
-    }
-    
-    private Method extractFieldGetter(String fieldName) {
-        try {
-            return this.getClass().getDeclaredMethod("get" + fieldName);
+
+        private Method extractFieldGetter(String fieldName) {
+            try {
+                return target.getClass().getDeclaredMethod("get" + fieldName);
+            }
+            catch (NoSuchMethodException | SecurityException e) {
+                return null;
+            }
         }
-        catch (NoSuchMethodException | SecurityException e) {
-            return null;
-        }
-    }
-    
-    private Method extractFieldSetter(String fieldName, Class fieldType) {
-        try {
-            return this.getClass().getDeclaredMethod("set" + fieldName, fieldType);
-        }
-        catch (NoSuchMethodException | SecurityException e) {
-            return null;
+
+        private Method extractFieldSetter(String fieldName, Class fieldType) {
+            try {
+                return target.getClass().getDeclaredMethod("set" + fieldName, fieldType);
+            }
+            catch (NoSuchMethodException | SecurityException e) {
+                return null;
+            }
         }
     }
     
