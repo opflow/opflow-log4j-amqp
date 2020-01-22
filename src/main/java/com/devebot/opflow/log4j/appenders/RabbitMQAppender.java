@@ -2,6 +2,8 @@ package com.devebot.opflow.log4j.appenders;
 
 import com.devebot.opflow.log4j.layouts.AbstractJsonLayout;
 import com.devebot.opflow.log4j.utils.JsonTool;
+import com.devebot.opflow.log4j.utils.PropTool;
+import com.devebot.opflow.log4j.utils.TypeConverter;
 import com.google.gson.JsonSyntaxException;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
@@ -13,7 +15,10 @@ import org.apache.log4j.spi.ErrorCode;
 import org.apache.log4j.spi.LoggingEvent;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -75,6 +80,8 @@ public class RabbitMQAppender extends AppenderSkeleton {
     @Override
     public void activateOptions() {
         super.activateOptions();
+
+        this.updateInlineOptions();
 
         try {
             this.getConnection();
@@ -163,6 +170,62 @@ public class RabbitMQAppender extends AppenderSkeleton {
         }
     }
 
+    private void updateInlineOptions() {
+        String prefix = "log4j.appender." + this.getName() + ".";
+        Properties inlineOpts = PropTool.filterProperties(System.getProperties(), prefix);
+
+        for (Map.Entry<Object, Object> entry : inlineOpts.entrySet()) {
+            try {
+                String fieldName = extractFieldName(prefix, entry.getKey().toString());
+                Method fieldGetter = extractFieldGetter(fieldName);
+                if (fieldGetter != null) {
+                    Class fieldType = fieldGetter.getReturnType();
+                    Method fieldSetter = extractFieldSetter(fieldName, fieldType);
+                    if (fieldSetter != null) {
+                        Object fieldArg = TypeConverter.convert(entry.getValue(), fieldType);
+                        if (fieldArg != null) {
+                            fieldSetter.invoke(this, fieldArg);
+                        }
+                    }
+                }
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                errorHandler.error(e.getMessage(), e, ErrorCode.GENERIC_FAILURE);
+            }
+        }
+    }
+    
+    private String extractFieldName(String prefix, String propKey) {
+        if (propKey != null) {
+            return capitalize(propKey.replace(prefix, ""));
+        }
+        return propKey;
+    }
+    
+    private String capitalize(String str) {
+        if (str != null && str.length() > 0) {
+            return str.substring(0, 1).toUpperCase() + str.substring(1);
+        }
+        return str;
+    }
+    
+    private Method extractFieldGetter(String fieldName) {
+        try {
+            return this.getClass().getDeclaredMethod("get" + fieldName);
+        }
+        catch (NoSuchMethodException | SecurityException e) {
+            return null;
+        }
+    }
+    
+    private Method extractFieldSetter(String fieldName, Class fieldType) {
+        try {
+            return this.getClass().getDeclaredMethod("set" + fieldName, fieldType);
+        }
+        catch (NoSuchMethodException | SecurityException e) {
+            return null;
+        }
+    }
+    
     /*
      * The getters & setters corresponding to appender configuration properties
      */
