@@ -83,7 +83,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
 
         optionUpdater.activateOptions();
         
-        if (!this.getEnabled()) return;
+        if (!this.isEnabled()) return;
         
         try {
             this.getConnection();
@@ -136,7 +136,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
      */
     @Override
     protected void append(LoggingEvent loggingEvent) {
-        if (this.getActivated() && this.getEnabled()) {
+        if (this.isActivated() && this.isEnabled()) {
             if (isAsSevereAsThreshold(loggingEvent.getLevel())) {
                 getThreadPoolExecutor().submit(new LoggingTask(loggingEvent));
             }
@@ -186,14 +186,6 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.activated = activated;
     }
     
-    public Boolean getActivated() {
-        return activated;
-    }
-
-    public void setActivated(Boolean activated) {
-        this.activated = activated;
-    }
-
     public boolean isEnabled() {
         return enabled;
     }
@@ -202,14 +194,6 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.enabled = enabled;
     }
     
-    public Boolean getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
-    }
-
     public String getIdentifier() {
         return identifier;
     }
@@ -293,14 +277,6 @@ public class RabbitMQAppender extends AppenderSkeleton {
     public void setExchangeDurable(boolean durable) {
         this.exchangeDurable = durable;
     }
-    
-    public Boolean getExchangeDurable() {
-        return exchangeDurable;
-    }
-    
-    public void setExchangeDurable(Boolean durable) {
-        this.exchangeDurable = durable;
-    }
 
     public String getQueue() {
         return queueName;
@@ -326,14 +302,6 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.queueDurable = queueDurable;
     }
     
-    public Boolean getQueueDurable() {
-        return queueDurable;
-    }
-
-    public void setQueueDurable(Boolean queueDurable) {
-        this.queueDurable = queueDurable;
-    }
-
     public boolean isQueueExclusive() {
         return queueExclusive;
     }
@@ -342,14 +310,6 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.queueExclusive = queueExclusive;
     }
     
-    public Boolean getQueueExclusive() {
-        return queueExclusive;
-    }
-
-    public void setQueueExclusive(Boolean queueExclusive) {
-        this.queueExclusive = queueExclusive;
-    }
-
     public boolean isQueueAutoDelete() {
         return queueAutoDelete;
     }
@@ -358,14 +318,6 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.queueAutoDelete = queueAutoDelete;
     }
     
-    public Boolean getQueueAutoDelete() {
-        return queueAutoDelete;
-    }
-
-    public void setQueueAutoDelete(Boolean queueAutoDelete) {
-        this.queueAutoDelete = queueAutoDelete;
-    }
-
     public long getQueueMaxLength() {
         return queueMaxLength;
     }
@@ -422,14 +374,6 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.automaticRecoveryEnabled = automaticRecoveryEnabled;
     }
     
-    public Boolean getAutomaticRecoveryEnabled() {
-        return automaticRecoveryEnabled;
-    }
-
-    public void setAutomaticRecoveryEnabled(Boolean automaticRecoveryEnabled) {
-        this.automaticRecoveryEnabled = automaticRecoveryEnabled;
-    }
-
     public boolean isTopologyRecoveryEnabled() {
         return topologyRecoveryEnabled;
     }
@@ -438,14 +382,6 @@ public class RabbitMQAppender extends AppenderSkeleton {
         this.topologyRecoveryEnabled = topologyRecoveryEnabled;
     }
     
-    public Boolean getTopologyRecoveryEnabled() {
-        return topologyRecoveryEnabled;
-    }
-
-    public void setTopologyRecoveryEnabled(Boolean topologyRecoveryEnabled) {
-        this.topologyRecoveryEnabled = topologyRecoveryEnabled;
-    }
-
     public int getNetworkRecoveryInterval() {
         return networkRecoveryInterval;
     }

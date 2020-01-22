@@ -64,8 +64,13 @@ public class OptionUpdater {
             return target.getClass().getDeclaredMethod("get" + fieldName);
         }
         catch (NoSuchMethodException | SecurityException e) {
-            publishError(e);
-            return null;
+            try {
+                return target.getClass().getDeclaredMethod("is" + fieldName);
+            }
+            catch (NoSuchMethodException | SecurityException ee) {
+                publishError(e);
+                return null;
+            }
         }
     }
 
