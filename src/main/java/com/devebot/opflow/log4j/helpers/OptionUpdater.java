@@ -38,8 +38,9 @@ public class OptionUpdater {
                         }
                     }
                 }
-            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
-                target.getErrorHandler().error(e.getMessage(), e, ErrorCode.GENERIC_FAILURE);
+            }
+            catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+                publishError(e);
             }
         }
     }
@@ -63,6 +64,7 @@ public class OptionUpdater {
             return target.getClass().getDeclaredMethod("get" + fieldName);
         }
         catch (NoSuchMethodException | SecurityException e) {
+            publishError(e);
             return null;
         }
     }
@@ -72,7 +74,12 @@ public class OptionUpdater {
             return target.getClass().getDeclaredMethod("set" + fieldName, fieldType);
         }
         catch (NoSuchMethodException | SecurityException e) {
+            publishError(e);
             return null;
         }
+    }
+    
+    private void publishError(Exception e) {
+        target.getErrorHandler().error(e.getMessage(), e, ErrorCode.GENERIC_FAILURE);
     }
 }
