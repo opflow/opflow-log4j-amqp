@@ -1,13 +1,15 @@
 package com.devebot.opflow.log4j.layouts;
 
 import com.devebot.opflow.log4j.utils.JsonTool;
-import org.apache.log4j.spi.LoggingEvent;
-import org.apache.log4j.spi.ThrowableInformation;
-
+import com.devebot.opflow.log4j.utils.TimeUtil;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
+import org.apache.log4j.spi.LocationInfo;
+import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.ThrowableInformation;
 
 public class LogstashLayout extends AbstractJsonLayout {
 
@@ -17,12 +19,26 @@ public class LogstashLayout extends AbstractJsonLayout {
 
     @Override
     protected void renderBasicFields(JsonTool.Builder builder, LoggingEvent event) {
-        builder.put("@timestamp", event.getTimeStamp());
+        builder.put("logId", UUID.randomUUID().toString());
+        builder.put("logTime", event.getTimeStamp());
+        if (this.depth >= 1) {
+            builder.put("timestamp", TimeUtil.toISO8601UTC(event.getTimeStamp()));
+        }
         builder.put("level", event.getLevel().toString());
         builder.put("message", event.getMessage());
         builder.put("loggerName", event.getLoggerName());
-        builder.put("threadName", event.getThreadName());
-        builder.put("@version", 1);
+        if (this.depth >= 1) {
+            builder.put("threadName", event.getThreadName());
+        }
+        if (this.depth >= 2) {
+            LocationInfo li = event.getLocationInformation();
+            builder.put("className", li.getClassName());
+            builder.put("methodName", li.getMethodName());
+            builder.put("lineNumber", li.getLineNumber());
+            if (this.depth >= 3) {
+                builder.put("fileName", li.getFileName());
+            }
+        }
     }
 
     @Override

@@ -1,7 +1,6 @@
 package com.devebot.opflow.log4j.layouts;
 
 import com.devebot.opflow.log4j.utils.JsonTool;
-import java.util.HashMap;
 import java.util.Map;
 import org.apache.log4j.Layout;
 import org.apache.log4j.spi.LoggingEvent;
@@ -13,26 +12,14 @@ import org.apache.log4j.spi.LoggingEvent;
 public abstract class AbstractJsonLayout extends Layout {
 
     private Map<String, Object> metadata;
-    private final Map<String, String> attrMapping;
+    protected int depth = 0;
     
-    private String getAttrName(String attrName) {
-        if (attrMapping.containsKey(attrName)) {
-            return attrMapping.get(attrName);
-        }
-        return attrName;
-    }
-
     public AbstractJsonLayout() {
-        this(null);
+        super();
     }
     
-    public AbstractJsonLayout(Map<String, String> nameMapping) {
-        super();
-        if (nameMapping != null) {
-            this.attrMapping = nameMapping;
-        } else {
-            this.attrMapping = new HashMap<>();
-        }
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
     
     public void setMetadata(Map<String, Object> metadata) {

@@ -30,6 +30,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
 
     private Boolean activated = true;
     private Boolean enabled = true;
+    private int depth = 0;
     private String identifier = null;
     private String host = "localhost";
     private int port = 5762;
@@ -112,6 +113,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
         if (layout instanceof AbstractJsonLayout) {
             AbstractJsonLayout jsonLayout = (AbstractJsonLayout) layout;
             try {
+                jsonLayout.setDepth(depth);
                 jsonLayout.setMetadata(metadata);
             } catch (JsonSyntaxException jse) {
                 errorHandler.error(jse.getMessage(), jse, ErrorCode.GENERIC_FAILURE);
@@ -192,6 +194,14 @@ public class RabbitMQAppender extends AppenderSkeleton {
     
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public int getDepth() {
+        return depth;
+    }
+
+    public void setDepth(int depth) {
+        this.depth = depth;
     }
     
     public String getIdentifier() {
