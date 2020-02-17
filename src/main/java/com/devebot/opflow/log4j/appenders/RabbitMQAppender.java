@@ -48,6 +48,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
     private long queueMaxLength = 0;
     private long queueMaxLengthBytes = 0;
     private long queueMessageTtl = 0;
+    private long messageExpiration = 0;
     private String routingKey = "";
     private Map<String, Object> metadata;
 
@@ -170,6 +171,9 @@ public class RabbitMQAppender extends AppenderSkeleton {
                     .correlationId(String.format("%s:%s", identifier, System.currentTimeMillis()))
                     .type(loggingEvent.getLevel().toString())
                     .contentType("text/json");
+            if (messageExpiration > 0) {
+                b.expiration(String.valueOf(messageExpiration));
+            }
             String message = layout.format(loggingEvent);
             getChannel().basicPublish(exchangeName, routingKey, b.build(), message.getBytes());
             return loggingEvent;
@@ -358,6 +362,14 @@ public class RabbitMQAppender extends AppenderSkeleton {
 
     public void setQueueMessageTTL(long queueMessageTTL) {
         this.queueMessageTtl = queueMessageTTL;
+    }
+
+    public long getMessageExpiration() {
+        return messageExpiration;
+    }
+
+    public void setMessageExpiration(long messageExpiration) {
+        this.messageExpiration = messageExpiration;
     }
 
     public String getRoutingKey() {

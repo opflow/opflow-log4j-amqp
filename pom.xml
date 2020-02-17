@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.devebot.opflow</groupId>
     <artifactId>log4j-amqp</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <packaging>jar</packaging>
     <name>opflow-log4j-amqp</name>
     <description>log4j appender to AMQP (RabbitMQ)</description>
