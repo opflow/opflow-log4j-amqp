@@ -3,11 +3,10 @@ package com.devebot.opflow.log4j.appenders;
 import com.devebot.opflow.log4j.helpers.OptionUpdater;
 import com.devebot.opflow.log4j.layouts.AbstractJsonLayout;
 import com.devebot.opflow.log4j.utils.JsonTool;
-import com.google.gson.JsonSyntaxException;
-import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.nostro.client.AMQP;
+import com.rabbitmq.nostro.client.Channel;
+import com.rabbitmq.nostro.client.Connection;
+import com.rabbitmq.nostro.client.ConnectionFactory;
 
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.ErrorCode;
@@ -116,7 +115,7 @@ public class RabbitMQAppender extends AppenderSkeleton {
             try {
                 jsonLayout.setDepth(depth);
                 jsonLayout.setMetadata(metadata);
-            } catch (JsonSyntaxException jse) {
+            } catch (Exception jse) {
                 errorHandler.error(jse.getMessage(), jse, ErrorCode.GENERIC_FAILURE);
             }
         }
